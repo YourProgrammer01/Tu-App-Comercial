@@ -3,11 +3,6 @@
     "name": "ComercioApp",
     "slug": "comercioapp",
     "version": "1.0.0",
-    "extra": {
-      "eas": {
-        "projectId": "239481a4-15ea-481c-b4f0-176fdebc706d"
-      }
-    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -18,16 +13,14 @@
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
+      "package": "com.yourprogrammer.comercioapp",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.VIBRATE",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ],
-      "package": "com.yourprogrammer.comercioapp"
+        "android.permission.VIBRATE"
+      ]
     },
     "ios": {
       "infoPlist": {
@@ -37,15 +30,11 @@
     },
     "plugins": [
       "expo-camera",
-      "expo-barcode-scanner",
       "expo-image-picker",
       [
         "expo-notifications",
-        {
-          "sounds": []
-        }
-      ],
-      "expo-font"
+        { "sounds": [] }
+      ]
     ],
     "extra": {
       "eas": {
