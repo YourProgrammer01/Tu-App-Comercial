@@ -1,19 +1,20 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { ActivityIndicator, View } from 'react-native';
 
 import HomeScreen from './src/screens/HomeScreen';
 import CatalogoScreen from './src/screens/CatalogoScreen';
 import VentaScreen from './src/screens/VentaScreen';
 import ResumenScreen from './src/screens/ResumenScreen';
 import ReporteScreen from './src/screens/ReporteScreen';
+import ActivacionScreen from './src/screens/ActivacionScreen';
 import { requestPermissions, scheduleReporteDiario } from './src/notifications/scheduler';
+import { isActivada } from './src/storage/licencia';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
 
 const TABS = [
   { name: 'Inicio', component: HomeScreen, icon: 'home' },
@@ -24,12 +25,30 @@ const TABS = [
 ];
 
 export default function App() {
+  const [activada, setActivada] = useState(null);
+
   useEffect(() => {
-    (async () => {
-      const granted = await requestPermissions();
-      if (granted) await scheduleReporteDiario();
-    })();
+    isActivada().then(setActivada);
   }, []);
+
+  useEffect(() => {
+    if (activada) {
+      (async () => {
+        const granted = await requestPermissions();
+        if (granted) await scheduleReporteDiario();
+      })();
+    }
+  }, [activada]);
+
+  if (activada === null) return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8EEF4' }}>
+      <ActivityIndicator size="large" color="#000" />
+    </View>
+  );
+
+  if (!activada) return (
+    <ActivacionScreen onActivada={() => setActivada(true)} />
+  );
 
   return (
     <NavigationContainer>
@@ -43,10 +62,6 @@ export default function App() {
           tabBarIcon: ({ color, size }) => {
             const tab = TABS.find(t => t.name === route.name);
             return <Ionicons name={tab?.icon} size={size} color={color} />;
-          },
-          tabBarLabel: ({ color }) => {
-            const tab = TABS.find(t => t.name === route.name);
-            return <Ionicons name={tab?.icon} size={0} color={color} />;
           },
         })}
       >

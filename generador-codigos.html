@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ComercioApp — Generador de Códigos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #E8EEF4; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .card { background: #fff; border-radius: 20px; padding: 32px; max-width: 420px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    h1 { font-size: 22px; font-weight: bold; margin-bottom: 4px; }
+    .sub { color: #888; font-size: 13px; margin-bottom: 24px; }
+    label { font-size: 13px; color: #555; font-weight: 600; display: block; margin-bottom: 6px; }
+    input { width: 100%; border: 1.5px solid #ddd; border-radius: 10px; padding: 12px 14px; font-size: 18px; letter-spacing: 3px; font-weight: bold; text-transform: uppercase; outline: none; margin-bottom: 16px; }
+    input:focus { border-color: #000; }
+    button { width: 100%; background: #000; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    button:hover { background: #333; }
+    .resultado { margin-top: 20px; background: #F0F4F8; border-radius: 12px; padding: 16px; text-align: center; display: none; }
+    .resultado.visible { display: block; }
+    .resultado-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .resultado-codigo { font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #000; }
+    .copiar { margin-top: 12px; background: #fff; border: 1.5px solid #000; color: #000; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .aviso { margin-top: 16px; font-size: 11px; color: #e74c3c; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔐 ComercioApp</h1>
+    <p class="sub">Generador de códigos de activación — Solo para uso interno</p>
+
+    <label>ID del dispositivo del cliente:</label>
+    <input type="text" id="deviceId" placeholder="Ej: A1B2C3D4E5F6" maxlength="12" />
+
+    <button onclick="generar()">Generar Código</button>
+
+    <div class="resultado" id="resultado">
+      <p class="resultado-label">Código de activación:</p>
+      <p class="resultado-codigo" id="codigo"></p>
+      <button class="copiar" onclick="copiar()">📋 Copiar código</button>
+    </div>
+
+    <p class="aviso">⚠️ Este código solo funciona en el dispositivo con ese ID exacto.</p>
+  </div>
+
+  <script>
+    const SECRET = 'COMERCIOAPP_2024_X9K';
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function generar() {
+      const deviceId = document.getElementById('deviceId').value.trim().toUpperCase();
+      if (deviceId.length < 6) { alert('Ingresá el ID del dispositivo completo'); return; }
+      const hash = await sha256(`${deviceId}-${SECRET}`);
+      const codigo = hash.substring(0, 8).toUpperCase();
+      document.getElementById('codigo').textContent = codigo;
+      document.getElementById('resultado').classList.add('visible');
+    }
+
+    function copiar() {
+      const codigo = document.getElementById('codigo').textContent;
+      navigator.clipboard.writeText(codigo).then(() => alert('✅ Código copiado'));
+    }
+
+    document.getElementById('deviceId').addEventListener('keypress', e => {
+      if (e.key === 'Enter') generar();
+    });
+  </script>
+</body>
+</html>
