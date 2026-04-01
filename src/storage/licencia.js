@@ -8,14 +8,23 @@ const KEY_ACTIVADA = 'app_activada';
 const KEY_DEVICE = 'app_device_id';
 
 export const getDeviceFingerprint = async () => {
-  const androidId = Application.getAndroidId?.() ?? 'unknown';
-  const installId = Application.getIosIdForVendorAsync
-    ? await Application.getIosIdForVendorAsync()
-    : androidId;
-  const appId = Application.applicationId ?? 'com.comercioapp';
-  const raw = `${androidId}-${installId}-${appId}-${Platform.OS}`;
-  const hash = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, raw);
-  return hash.substring(0, 12).toUpperCase();
+  try {
+    let deviceId = 'unknown';
+    if (Platform.OS === 'android') {
+      deviceId = Application.getAndroidId() ?? 'unknown';
+    } else {
+      deviceId = (await Application.getIosIdForVendorAsync()) ?? 'unknown';
+    }
+    const appId = Application.applicationId ?? 'com.comercioapp';
+    const installTime = Application.installReferrer ?? String(appId.length);
+    const raw = `${deviceId}-${appId}-${installTime}-${Platform.OS}`;
+    const hash = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, raw);
+    return hash.substring(0, 12).toUpperCase();
+  } catch (e) {
+    const fallback = `FALLBACK-${Platform.OS}-${Date.now()}`;
+    const hash = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, fallback);
+    return hash.substring(0, 12).toUpperCase();
+  }
 };
 
 export const generarCodigoValido = async (deviceId) => {
